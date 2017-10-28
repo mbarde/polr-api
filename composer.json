@@ -1,0 +1,34 @@
+{
+    "name": "lagdo/polr-api",
+    "description": "An alternative API for the Polr URL Shortener.",
+    "keywords": ["url-shortener", "url", "api"],
+    "license": "GPL-v2",
+    "type": "project",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/cydrobolt/polr"
+        }
+    ],
+    "require": {
+        "cydrobolt/polr": "~2.2"
+    },
+    "require-dev": {
+        "fzaninotto/faker": "~1.0",
+        "phpunit/phpunit": "^5.2",
+        "symfony/css-selector": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lagdo\\Polr\\Api\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests/"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist"
+    }
+}
