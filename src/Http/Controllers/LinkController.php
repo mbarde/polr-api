@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Factories\LinkFactory;
 use App\Helpers\LinkHelper;
 use App\Models\Link;
+use Lagdo\Polr\Api\Helpers\UserHelper;
 use Lagdo\Polr\Api\Helpers\ResponseHelper;
 
 use Yajra\Datatables\Facades\Datatables;
@@ -15,7 +16,10 @@ class LinkController extends Controller
 {
     public function getAdminLinks(Request $request)
     {
-        // self::ensureAdmin();
+        if(!UserHelper::userIsAdmin($request->user))
+        {
+            return ResponseHelper::make('ACCESS_DENIED', 'You do not have permission to get links.', 401);
+        }
 
     	$links = Link::select(['short_url', 'long_url', 'clicks', 'created_at', 'creator', 'is_disabled']);
         $datatables = Datatables::of($links)->make(true);
@@ -25,7 +29,10 @@ class LinkController extends Controller
 
     public function getUserLinks(Request $request)
     {
-        // self::ensureLoggedIn();
+        if(UserHelper::userIsAnonymous($request->user))
+        {
+            return ResponseHelper::make('ACCESS_DENIED', 'You do not have permission to get links.', 401);
+        }
 
         $username = $request->user->username;
         $links = Link::where('creator', $username)
@@ -38,8 +45,6 @@ class LinkController extends Controller
 
     public function shortenLink(Request $request)
     {
-        $user = $request->user;
-
         // Validate parameters
         // Encode spaces as %20 to avoid validator conflicts
         $validator = \Validator::make(array_merge([
@@ -47,20 +52,22 @@ class LinkController extends Controller
         ], $request->except('url')), [
             'url' => 'required|url'
         ]);
-        if ($validator->fails()) {
+        if ($validator->fails())
+        {
             return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
         }
 
         $long_url = $request->input('url'); // * required
         $is_secret = ($request->input('is_secret') == 'true' ? true : false);
-
         $link_ip = $request->ip();
         $custom_ending = $request->input('custom_ending');
-
-        try {
-            $formatted_link = LinkFactory::createLink($long_url, $is_secret, $custom_ending, $link_ip, $user->username, false, true);
+        try
+        {
+            $formatted_link = LinkFactory::createLink($long_url, $is_secret,
+                $custom_ending, $link_ip, $request->user->username, false, true);
         }
-        catch (\Exception $e) {
+        catch (\Exception $e)
+        {
             return ResponseHelper::make('CREATION_ERROR', $e->getMessage(), 400);
         }
 
@@ -69,13 +76,10 @@ class LinkController extends Controller
 
     public function lookupLink(Request $request, $ending)
     {
-        $user = $request->user;
-
         // Validate URL form data
-        $validator = \Validator::make(['ending' => $ending], [
-            'ending' => 'required|alpha_dash'
-        ]);
-        if ($validator->fails()) {
+        $validator = \Validator::make(['ending' => $ending], ['ending' => 'required|alpha_dash']);
+        if ($validator->fails())
+        {
             return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
         }
 
@@ -116,7 +120,8 @@ class LinkController extends Controller
         	'url' => 'required_without_all:status|url',
             'status' => 'required_without_all:url|in:enable,disable,toggle',
         ]);
-        if ($validator->fails()) {
+        if ($validator->fails())
+        {
             return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
         }
 
@@ -125,15 +130,18 @@ class LinkController extends Controller
          * Otherwise, only allow the user to edit their own links.
          */
         $link = LinkHelper::linkExists($ending);
-        if (!$link) {
+        if (!$link)
+        {
             return ResponseHelper::make('NOT_FOUND', 'Link not found.', 404);
+        }
+
+        if($request->user->username != $link->creator && !UserHelper::userIsAdmin($user))
+        {
+            return ResponseHelper::make('ACCESS_DENIED', 'You do not have permission to edit this link.', 401);
         }
 
         if($request->has('url'))
         {
-            if($link->creator !== $request->user->username) {
-                // self::ensureAdmin();
-            }
             $link->long_url = $request->input('url');
         }
 
@@ -159,20 +167,25 @@ class LinkController extends Controller
         }
 
         $link->save();
+
         return ResponseHelper::make();
     }
 
     public function deleteLink(Request $request, $ending)
     {
-        // self::ensureAdmin();
+        if(!UserHelper::userIsAdmin($request->user))
+        {
+            return ResponseHelper::make('ACCESS_DENIED', 'You do not have permission to delete links.', 401);
+        }
 
         $link = LinkHelper::linkExists($ending);
-
-        if (!$link) {
+        if(!$link)
+        {
             return ResponseHelper::make('NOT_FOUND', 'Link not found.', 404);
         }
 
         $link->delete();
+
         return ResponseHelper::make();
     }
 }

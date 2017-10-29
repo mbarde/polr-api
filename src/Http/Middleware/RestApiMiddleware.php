@@ -40,7 +40,7 @@ class RestApiMiddleware
             $user = User::where('active', 1)->where('api_key', $api_key)->where('api_active', 1)->first();
             if(!$user)
             {
-                return ResponseHelper::make('AUTH_ERROR', 'Authentication token invalid.', 401);
+                return ResponseHelper::make('AUTH_ERROR', 'Authentication token invalidus.', 401);
             }
             $username = $user->username;
             $user->anonymous = false;

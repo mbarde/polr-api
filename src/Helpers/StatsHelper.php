@@ -16,7 +16,8 @@ class StatsHelper
         $this->left_bound_parsed = Carbon::parse($left_bound);
         $this->right_bound_parsed = Carbon::parse($right_bound);
 
-        if (!$this->left_bound_parsed->lte($this->right_bound_parsed)) {
+        if (!$this->left_bound_parsed->lte($this->right_bound_parsed))
+        {
             // If left bound is not less than or equal to right bound
             throw new \Exception('Invalid bounds.');
         }
@@ -24,7 +25,8 @@ class StatsHelper
         $days_diff = $this->left_bound_parsed->diffInDays($this->right_bound_parsed);
         $max_days_diff = env('_ANALYTICS_MAX_DAYS_DIFF') ?: 365;
 
-        if ($days_diff > $max_days_diff) {
+        if ($days_diff > $max_days_diff)
+        {
             throw new \Exception('Bounds too broad.');
         }
     }
