@@ -3,6 +3,7 @@
 namespace Lagdo\Polr\Api;
 
 use Illuminate\Support\ServiceProvider;
+use Lagdo;
 
 class PolrApiServiceProvider extends ServiceProvider
 {
@@ -21,10 +22,7 @@ class PolrApiServiceProvider extends ServiceProvider
     public function boot()
     {
         // Load package routes
-        if(!$this->app->routesAreCached())
-        {
-            require(__DIR__ . '/Http/routes.php');
-        }
+        require(__DIR__ . '/Http/routes.php');
     }
 
     /**
@@ -34,7 +32,10 @@ class PolrApiServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        // Register the route middleware
+        $this->app->routeMiddleware([
+            'rest_api' => Http\Middleware\RestApiMiddleware::class,
+        ]);
     }
 
     /**

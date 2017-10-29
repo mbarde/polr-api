@@ -3,79 +3,93 @@ namespace Lagdo\Polr\Api\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Http\Controllers\Controller;
 use App\Helpers\LinkHelper;
 use App\Helpers\UserHelper;
-use App\Helpers\StatsHelper;
-use App\Exceptions\Api\ApiException;
+use Lagdo\Polr\Api\Helpers\ResponseHelper;
+use Lagdo\Polr\Api\Helpers\StatsHelper;
 
 class StatsController extends Controller
 {
-    public function lookupLinkStats (Request $request, $stats_type=false)
+    protected function getStats(Request $request, $stats_type, $link)
     {
         $user = $request->user;
-        $response_type = $request->input('response_type') ?: 'json';
-
-        if ($user->anonymous) {
-            throw new ApiException('AUTH_ERROR', 'Anonymous access of this API is not permitted.', 401, $response_type);
+        if($user->anonymous)
+        {
+            return ResponseHelper::make('AUTH_ERROR', 'Anonymous access of this API is not permitted.', 401);
         }
 
-        if ($response_type != 'json') {
-            throw new ApiException('JSON_ONLY', 'Only JSON-encoded data is available for this endpoint.', 401, $response_type);
-        }
-
-        $validator = \Validator::make($request->all(), [
-            'url_ending' => 'required|alpha_dash',
-            'stats_type' => 'alpha_num',
-            'left_bound' => 'date',
-            'right_bound' => 'date'
+        $validator = \Validator::make(array_merge($request->all(), ['stats_type' => $stats_type]), [
+            'stats_type' => 'required|in:day,country,referer',
+            'left_bound' => 'required|date',
+            'right_bound' => 'required|date'
         ]);
-
-        if ($validator->fails()) {
-            throw new ApiException('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400, $response_type);
+        if($validator->fails())
+        {
+            return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
         }
 
-        $url_ending = $request->input('url_ending');
-        $stats_type = $request->input('stats_type');
         $left_bound = $request->input('left_bound');
         $right_bound = $request->input('right_bound');
-        $stats_type = $request->input('stats_type');
 
-        // ensure user can only read own analytics or user is admin
-        $link = LinkHelper::linkExists($url_ending);
-
-        if ($link === false) {
-            throw new ApiException('NOT_FOUND', 'Link not found.', 404, $response_type);
-        }
-
-        if (($link->creator != $user->username) &&
-                !(UserHelper::userIsAdmin($user->username))){
+        // Ensure user can only read own analytics or user is admin
+        if(($link == null || $link->creator != $user->username) &&
+        		!(UserHelper::userIsAdmin($user->username)))
+        {
             // If user does not own link and is not an admin
-            throw new ApiException('ACCESS_DENIED', 'Unauthorized.', 401, $response_type);
+            return ResponseHelper::make('ACCESS_DENIED', 'Unauthorized.', 401);
         }
 
-        try {
-            $stats = new StatsHelper($link->id, $left_bound, $right_bound);
+        try
+        {
+            $stats = new StatsHelper(($link) ? $link->id : -1, $left_bound, $right_bound);
         }
-        catch (\Exception $e) {
-            throw new ApiException('ANALYTICS_ERROR', $e->getMessage(), 400, $response_type);
+        catch (\Exception $e)
+        {
+            return ResponseHelper::make('ANALYTICS_ERROR', $e->getMessage(), 400);
         }
 
-        if ($stats_type == 'day') {
+        if($stats_type == 'day')
+        {
             $fetched_stats = $stats->getDayStats();
         }
-        else if ($stats_type == 'country') {
+        else if($stats_type == 'country')
+        {
             $fetched_stats = $stats->getCountryStats();
         }
-        else if ($stats_type == 'referer') {
+        else if($stats_type == 'referer')
+        {
             $fetched_stats = $stats->getRefererStats();
         }
-        else {
-            throw new ApiException('INVALID_ANALYTICS_TYPE', 'Invalid analytics type requested.', 400, $response_type);
+        else
+        {
+            return ResponseHelper::make('INVALID_ANALYTICS_TYPE', 'Invalid analytics type requested.', 400);
         }
 
-        return self::encodeResponse([
-            'url_ending' => $link->short_url,
-            'data' => $fetched_stats,
-        ], 'data_link_' . $stats_type, $response_type, false);
+        return ResponseHelper::make(($fetched_stats) ? : []);
+    }
+
+    public function getAllStats(Request $request, $stats_type)
+    {
+    	$link = null;
+    	return $this->getStats($request, $stats_type, $link);
+    }
+
+    public function getLinkStats(Request $request, $url_ending, $stats_type)
+    {
+    	// validate the link ending
+        $validator = \Validator::make(['url_ending' => $url_ending], ['url_ending' => 'alpha_dash']);
+        if($validator->fails())
+        {
+            return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
+        }
+
+    	$link = LinkHelper::linkExists($url_ending);
+        if($link === false)
+        {
+            return ResponseHelper::make('NOT_FOUND', 'Link not found.', 404);
+        }
+
+        return $this->getStats($request, $stats_type, $link);
     }
 }
