@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "cydrobolt/polr": "dev-master || ~2.2"
+        "cydrobolt/polr": "dev-master"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.0",
