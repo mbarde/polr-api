@@ -50,7 +50,16 @@ class LinkController extends Controller
         $validator = \Validator::make(array_merge([
             'url' => str_replace(' ', '%20', $request->input('url'))
         ], $request->except('url')), [
-            'url' => 'required|url'
+            'url' => 'required|url',
+        ]);
+        if ($validator->fails())
+        {
+            return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
+        }
+        $validator = \Validator::make($request->all(), [
+            'ending' => 'alpha_dash',
+            'secret' => 'in:true,false',
+            'ip' => 'ip',
         ]);
         if ($validator->fails())
         {
@@ -58,9 +67,9 @@ class LinkController extends Controller
         }
 
         $long_url = $request->input('url'); // * required
-        $is_secret = ($request->input('is_secret') == 'true' ? true : false);
-        $link_ip = $request->ip();
-        $custom_ending = $request->input('custom_ending');
+        $is_secret = ($request->input('secret') == 'true' ? true : false);
+        $link_ip = $request->input('ip');
+        $custom_ending = $request->input('ending');
         try
         {
             $formatted_link = LinkFactory::createLink($long_url, $is_secret,
