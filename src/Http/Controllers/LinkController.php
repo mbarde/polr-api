@@ -21,7 +21,7 @@ class LinkController extends Controller
             return ResponseHelper::make('ACCESS_DENIED', 'You do not have permission to get links.', 401);
         }
 
-    	$links = Link::select(['short_url', 'long_url', 'clicks', 'created_at', 'creator', 'is_disabled']);
+    	$links = Link::select(['id', 'short_url', 'long_url', 'clicks', 'created_at', 'creator', 'is_disabled']);
         $datatables = Datatables::of($links)->make(true);
 
         return ResponseHelper::make(json_decode($datatables->content()));
