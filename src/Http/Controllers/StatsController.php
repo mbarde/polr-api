@@ -11,10 +11,10 @@ use Lagdo\Polr\Api\Helpers\StatsHelper;
 
 class StatsController extends Controller
 {
-    protected function getStats(Request $request, $stats_type, $link)
+    protected function fetchStats(Request $request, $link)
     {
-        $validator = \Validator::make(array_merge($request->all(), ['stats_type' => $stats_type]), [
-            'stats_type' => 'required|in:day,country,referer',
+        $validator = \Validator::make($request->all(), [
+            'type' => 'required|in:day,country,referer',
             'left_bound' => 'required|date',
             'right_bound' => 'required|date'
         ]);
@@ -34,6 +34,7 @@ class StatsController extends Controller
             return ResponseHelper::make('ANALYTICS_ERROR', $e->getMessage(), 400);
         }
 
+        $stats_type = $request->input('type');
         if($stats_type == 'day')
         {
             $fetched_stats = $stats->getDayStats();
@@ -54,27 +55,40 @@ class StatsController extends Controller
         return ResponseHelper::make(($fetched_stats) ? : []);
     }
 
-    public function getAllStats(Request $request, $stats_type)
+    public function getStats(Request $request)
     {
         if(!UserHelper::userIsAdmin($request->user))
         {
             return ResponseHelper::make('ACCESS_DENIED', 'You do not have permission to view stats for all links.', 401);
         }
 
-        $link = null;
-    	return $this->getStats($request, $stats_type, $link);
-    }
-
-    public function getLinkStats(Request $request, $url_ending, $stats_type)
-    {
-    	// validate the link ending
-        $validator = \Validator::make(['url_ending' => $url_ending], ['url_ending' => 'alpha_dash']);
+    	// Validate the stats type
+        $validator = \Validator::make($request->all(), ['type' => 'required:in:day,country,referer']);
         if($validator->fails())
         {
             return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
         }
 
-    	$link = LinkHelper::linkExists($url_ending);
+        $link = null;
+    	return $this->fetchStats($request, $link);
+    }
+
+    public function getLinkStats(Request $request, $ending)
+    {
+        // Validate the stats type
+        $validator = \Validator::make($request->all(), ['type' => 'required:in:day,country,referer']);
+        if($validator->fails())
+        {
+            return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
+        }
+        // Validate the link ending
+        $validator = \Validator::make(['ending' => $ending], ['ending' => 'alpha_dash']);
+        if($validator->fails())
+        {
+            return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
+        }
+
+    	$link = LinkHelper::linkExists($ending);
         if($link === false)
         {
             return ResponseHelper::make('NOT_FOUND', 'Link not found.', 404);
@@ -85,6 +99,6 @@ class StatsController extends Controller
             return ResponseHelper::make('ACCESS_DENIED', 'You do not have permission to view stats for this link.', 401);
         }
 
-        return $this->getStats($request, $stats_type, $link);
+        return $this->fetchStats($request, $link);
     }
 }
