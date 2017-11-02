@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Helpers\ApiHelper;
 use App\Exceptions\Api\ApiException;
 use Lagdo\Polr\Api\Helpers\ResponseHelper;
+use Lagdo\Polr\Api\Helpers\UserHelper;
 
 class RestApiMiddleware
 {
@@ -52,6 +53,7 @@ class RestApiMiddleware
             return ResponseHelper::make('QUOTA_EXCEEDED', 'Quota exceeded.', 429);
         }
         $request->user = $user;
+        UserHelper::$username = $user->username;
 
         return $next($request);
     }

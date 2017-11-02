@@ -160,16 +160,13 @@ class LinkController extends Controller
             switch($status)
             {
             case 'enable':
-                // if currently disabled, then enable
                 $link->is_disabled = 0;
                 break;
             case 'disable':
-                // if currently disabled, then enable
                 $link->is_disabled = 1;
                 break;
             case 'toggle':
             default:
-                // if currently disabled, then enable
                 $link->is_disabled = ($link->is_disabled ? 1 : 0);
                 break;
             }

@@ -3,7 +3,6 @@
 namespace Lagdo\Polr\Api;
 
 use Illuminate\Support\ServiceProvider;
-use Lagdo;
 
 class PolrApiServiceProvider extends ServiceProvider
 {

@@ -5,6 +5,8 @@ use App\Models\User;
 
 class UserHelper
 {
+    public static $username = '';
+
     public static $USER_ROLES = [
         'admin'    => 'admin',
         'default'  => '',
