@@ -21,4 +21,16 @@ class UserHelper
     {
         return ($user->anonymous);
     }
+
+    public static function getUserById($user_id, $inactive = false)
+    {
+        $user = User::select(['username', 'email', 'created_at', 'active',
+            'api_key', 'api_active', 'api_quota', 'role', 'id'])
+            ->where('id', $user_id);
+        if (!$inactive)
+        {
+            $user = $user->where('active', 1);
+        }
+        return $user->first();
+    }
 }
