@@ -42,7 +42,7 @@ $this->app->group(['prefix' => 'api/v2', 'namespace' => 'Lagdo\Polr\Api\Http\Con
     // Update the user with a given id
     $app->put('users/{id}', 'UserController@updateUser');
     // Generate new API key for the user
-    $app->post('users/{id}/api', 'UserController@generateApiKey');
+    $app->post('users/{id}/api', 'UserController@generateNewKey');
     // Update API settings for the user
     $app->put('users/{id}/api', 'UserController@updateApi');
     // Delete the user with a given id

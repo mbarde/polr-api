@@ -79,7 +79,12 @@ class UserController extends Controller
 
         if($request->has('role'))
         {
-            $user->role = $request->input('role');
+            $role = trim($request->input('role'));
+            if($role == 'default')
+            {
+                $role = '';
+            }
+            $user->role = $role;
         }
         if($request->has('status'))
         {
@@ -101,7 +106,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return ResponseHelper::make();
+        return ResponseHelper::make($user);
     }
 
     public function updateApi(Request $request, $user_id)
@@ -153,10 +158,10 @@ class UserController extends Controller
 
         $user->save();
 
-        return ResponseHelper::make();
+        return ResponseHelper::make($user);
     }
 
-    public function generateApiKey(Request $request, $user_id)
+    public function generateNewKey(Request $request, $user_id)
     {
         /**
          * If user is an admin, allow resetting of any API key
@@ -200,7 +205,7 @@ class UserController extends Controller
         $user->api_key = $new_api_key;
         $user->save();
 
-        return ResponseHelper::make($user->api_key);
+        return ResponseHelper::make($user);
     }
 
     /*public function addNewUser(Request $request)
