@@ -40,7 +40,7 @@ $app->register(\Lagdo\Polr\Api\PolrApiServiceProvider::class);
 Documentation
 -------------
 
-The API endpoints are [documented here](docs/api). The documentation is generated with [API Doc](http://apidocjs.com/).
+The API endpoints are [documented here](docs/api.md). The documentation is generated with [API Doc](http://apidocjs.com/).
 
 Known issues
 ------------
