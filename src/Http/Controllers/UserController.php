@@ -169,8 +169,8 @@ class UserController extends Controller
      * @apiGroup Users
      *
      * @apiParam {String} key               The user API key.
-     * @apiParam {String} [quota]           The new quota.
-     * @apiParam {String} [status]          The access change: enable, disable or toggle.
+     * @apiParam {String} [quota]           The new API quota.
+     * @apiParam {String} [status]          The API access change: enable, disable or toggle.
      *
      * @apiSuccess {String} message         The response message.
      * @apiSuccess {Object} settings        The Polr instance config options.
