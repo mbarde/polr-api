@@ -11,7 +11,15 @@ use Lagdo\Polr\Api\Helpers\StatsHelper;
 
 class StatsController extends Controller
 {
-    protected function fetchStats(Request $request, $link)
+    /**
+     * Fetch stats from the database
+     *
+     * @param Request $request          The Laravel Request object
+     * @param App\Model\Link $link      The link to get stats of, or null
+     *
+     * @return Response
+     */
+    protected function fetchStats(Request $request, $link = null)
     {
         $validator = \Validator::make($request->all(), [
             'type' => 'required|in:day,country,referer',
@@ -49,12 +57,31 @@ class StatsController extends Controller
         }
         else
         {
-            return ResponseHelper::make('INVALID_ANALYTICS_TYPE', 'Invalid analytics type requested.', 400);
+            return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid analytics type requested.', 400);
         }
 
         return ResponseHelper::make(($fetched_stats) ? : []);
     }
 
+    /**
+     * @api {get} /stats Get Stats
+     * @apiDescription Fetch stats of a given type.
+     * @apiName GetStats
+     * @apiGroup Stats
+     * 
+     * @apiParam {String} key               The user API key.
+     * @apiParam {String} type              The type of stats to fetch.
+     * @apiParam {String} left_bound        The start date.
+     * @apiParam {String} right_bound       The end date.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Mixed} result           The stats data.
+     *
+     * @apiError (Error 401) {Object} AccessDenied           The user does not have permission to view stats.
+     * @apiError (Error 400) {Object} AnalyticsError         An error occurs while fetching stats from the database.
+     * @apiError (Error 400) {Object} MissingParameters      There is a missing or invalid parameter.
+     */
     public function getStats(Request $request)
     {
         if(!UserHelper::userIsAdmin($request->user))
@@ -69,10 +96,29 @@ class StatsController extends Controller
             return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
         }
 
-        $link = null;
-    	return $this->fetchStats($request, $link);
+    	return $this->fetchStats($request);
     }
 
+    /**
+     * @api {get} /links/:ending/stats Get Link Stats
+     * @apiDescription Fetch stats of a given type for a single link.
+     * @apiName GetLinkStats
+     * @apiGroup Stats
+     * 
+     * @apiParam {String} key               The user API key.
+     * @apiParam {String} type              The type of stats to fetch.
+     * @apiParam {String} ending            The short URL id of the link.
+     * @apiParam {String} left_bound        The start date.
+     * @apiParam {String} right_bound       The end date.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Mixed} result           The stats data.
+     *
+     * @apiError (Error 401) {Object} AccessDenied           The user does not have permission to view stats.
+     * @apiError (Error 400) {Object} AnalyticsError         An error occurs while fetching stats from the database.
+     * @apiError (Error 400) {Object} MissingParameters      There is a missing or invalid parameter.
+     */
     public function getLinkStats(Request $request, $ending)
     {
         // Validate the stats type

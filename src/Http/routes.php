@@ -25,6 +25,10 @@ $this->app->group(['prefix' => 'api/v2', 'namespace' => 'Lagdo\Polr\Api\Http\Con
     $app->put('links/{ending}', 'LinkController@updateLink');
     // Delete the link with a given ending
     $app->delete('links/{ending}', 'LinkController@deleteLink');
+
+    /*
+     * Stats routes
+     */
     // Get stats of a given type
     $app->get('stats', 'StatsController@getStats');
     // Get stats of a given type, for the link with a given ending

@@ -10,6 +10,15 @@ use Illuminate\Support\Facades\DB;
 
 class StatsHelper
 {
+    /**
+     * The constructor
+     *
+     * @param unknown $link_id          The link id
+     * @param unknown $left_bound       The start date
+     * @param unknown $right_bound      The end date
+     *
+     * @throws \Exception
+     */
     public function __construct($link_id, $left_bound, $right_bound)
     {
         $this->link_id = $link_id;
@@ -31,18 +40,13 @@ class StatsHelper
         }
     }
 
+    /**
+     * Fetches base rows given left date bound, right date bound, and link id
+     *
+     * @return DB rows
+     */
     public function getBaseRows()
     {
-        /**
-        * Fetches base rows given left date bound, right date bound, and link id
-        *
-        * @param integer $link_id
-        * @param string $left_bound
-        * @param string $right_bound
-        *
-        * @return DB rows
-        */
-
         $rows = DB::table('clicks')
             // ->where('link_id', $this->link_id)
             ->where('created_at', '>=', $this->left_bound_parsed)
@@ -55,6 +59,11 @@ class StatsHelper
         return $rows;
     }
 
+    /**
+     * Fetches day stats
+     *
+     * @return DB rows
+     */
     public function getDayStats()
     {
         // Return stats by day from the last 30 days
@@ -80,6 +89,11 @@ class StatsHelper
         return $stats->orderBy('x', 'asc')->get();
     }
 
+    /**
+     * Fetches country stats
+     *
+     * @return DB rows
+     */
     public function getCountryStats()
     {
         $stats = $this->getBaseRows()
@@ -91,6 +105,11 @@ class StatsHelper
         return $stats;
     }
 
+    /**
+     * Fetches referer stats
+     *
+     * @return DB rows
+     */
     public function getRefererStats()
     {
         $stats = $this->getBaseRows()

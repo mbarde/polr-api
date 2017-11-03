@@ -14,6 +14,25 @@ use Yajra\Datatables\Facades\Datatables;
 
 class LinkController extends Controller
 {
+    /**
+     * @api {get} /links Get Admin Links
+     * @apiDescription Fetch a paginated list of links. The input parameters are those of the Datatables library.
+     * @apiName GetAdminLinks
+     * @apiGroup Links
+     * 
+     * @apiParam {Integer} [draw]           The draw option.
+     * @apiParam {Object} [columns]         The table columns.
+     * @apiParam {Object} [order]           The data ordering.
+     * @apiParam {Integer} [start]          The data offset.
+     * @apiParam {Integer} [length]         The data count.
+     * @apiParam {Object} [search]          The search options.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Object} result          The link list.
+     *
+     * @apiError (Error 401) {Object} AccessDenied           The user does not have permission to list links.
+     */
     public function getAdminLinks(Request $request)
     {
         if(!UserHelper::userIsAdmin($request->user))
@@ -27,6 +46,25 @@ class LinkController extends Controller
         return ResponseHelper::make(json_decode($datatables->content()));
     }
 
+    /**
+     * @api {get} /user/links Get User Links
+     * @apiDescription Fetch a paginated list of links. The input parameters are those of the Datatables library.
+     * @apiName GetUserLinks
+     * @apiGroup Links
+     *
+     * @apiParam {Integer} [draw]           The draw option.
+     * @apiParam {Object} [columns]         The table columns.
+     * @apiParam {Object} [order]           The data ordering.
+     * @apiParam {Integer} [start]          The data offset.
+     * @apiParam {Integer} [length]         The data count.
+     * @apiParam {Object} [search]          The search options.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Mixed} result           The link list.
+     *
+     * @apiError (Error 401) {Object} AccessDenied           The user does not have permission to list links.
+     */
     public function getUserLinks(Request $request)
     {
         if(UserHelper::userIsAnonymous($request->user))
@@ -43,6 +81,25 @@ class LinkController extends Controller
         return ResponseHelper::make(json_decode($datatables->content()));
     }
 
+    /**
+     * @api {post} /links Shorten a link
+     * @apiDescription Create a shortened URL for a given link
+     * @apiName ShortenLink
+     * @apiGroup Links
+     *
+     * @apiParam {String} key               The user API key.
+     * @apiParam {String} url               The link to shorten.
+     * @apiParam {String} [ending]          A custom ending for the link.
+     * @apiParam {String} [secret]          Create a secret link or not.
+     * @apiParam {String} [ip]              The IP address the request came from.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Mixed} result           The shortened URL.
+     *
+     * @apiError (Error 400) {Object} CreationError          An error occurs while shortening the link.
+     * @apiError (Error 400) {Object} MissingParameters      There is a missing or invalid parameter.
+     */
     public function shortenLink(Request $request)
     {
         // Validate parameters
@@ -83,6 +140,23 @@ class LinkController extends Controller
         return ResponseHelper::make($formatted_link);
     }
 
+    /**
+     * @api {get} /links/:ending Lookup Link
+     * @apiDescription Returns
+     * @apiName LookupLink
+     * @apiGroup Links
+     *
+     * @apiParam {String} key               The user API key.
+     * @apiParam {String} [secret]          The link secret.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Object} result          The link data.
+     *
+     * @apiError (Error 404) {Object} NotFound               Unable to find a link with the given ending.
+     * @apiError (Error 401) {Object} AccessDenied           Invalid URL code given for a secret URL.
+     * @apiError (Error 400) {Object} MissingParameters      There is a missing or invalid parameter.
+     */
     public function lookupLink(Request $request, $ending)
     {
         // Validate URL form data
@@ -99,8 +173,8 @@ class LinkController extends Controller
         }
 
         // "secret" key required for lookups on secret URLs
-        $url_key = $request->input('url_key');
-        if($link['secret_key'] && $url_key != $link['secret_key'])
+        $secret = $request->input('secret');
+        if($link['secret_key'] && $secret != $link['secret_key'])
         {
             return ResponseHelper::make('ACCESS_DENIED', 'Invalid URL code for secret URL.', 401);
         }
@@ -120,6 +194,23 @@ class LinkController extends Controller
         return ResponseHelper::make($response);
     }
 
+    /**
+     * @api {put} /links/:ending Update a link
+     * @apiDescription Update the link with the given ending.
+     * @apiName UpdateLink
+     * @apiGroup Links
+     *
+     * @apiParam {String} key               The user API key.
+     * @apiParam {String} [url]             The new URL.
+     * @apiParam {String} [status]          The status change: enable, disable or toggle.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     *
+     * @apiError (Error 401) {Object} AccessDenied           The user does not have permission to edit the link.
+     * @apiError (Error 404) {Object} NotFound               Unable to find a link with the given ending.
+     * @apiError (Error 400) {Object} MissingParameters      There is a missing or invalid parameter.
+     */
     public function updateLink(Request $request, $ending)
     {
     	// At least one of the link properties must be present in the input data
@@ -146,7 +237,7 @@ class LinkController extends Controller
 
         if($request->user->username != $link->creator && !UserHelper::userIsAdmin($user))
         {
-            return ResponseHelper::make('ACCESS_DENIED', 'You do not have permission to edit this link.', 401);
+            return ResponseHelper::make('ACCESS_DENIED', 'You do not have permission to edit the link.', 401);
         }
 
         if($request->has('url'))
@@ -177,6 +268,20 @@ class LinkController extends Controller
         return ResponseHelper::make();
     }
 
+    /**
+     * @api {delete} /links/:ending Delete a link
+     * @apiDescription Delete the link with the given ending.
+     * @apiName DeleteLink
+     * @apiGroup Links
+     *
+     * @apiParam {String} key               The user API key.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     *
+     * @apiError (Error 401) {Object} AccessDenied           The user does not have permission to delete links.
+     * @apiError (Error 404) {Object} NotFound               Unable to find a link with the given ending.
+     */
     public function deleteLink(Request $request, $ending)
     {
         if(!UserHelper::userIsAdmin($request->user))

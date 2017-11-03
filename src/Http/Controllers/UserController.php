@@ -14,6 +14,25 @@ use Yajra\Datatables\Facades\Datatables;
 
 class UserController extends Controller
 {
+    /**
+     * @api {get} /users Get Users
+     * @apiDescription Fetch a paginated list of users. The input parameters are those of the Datatables library.
+     * @apiName GetUsers
+     * @apiGroup Users
+     * 
+     * @apiParam {Integer} [draw]           The draw option.
+     * @apiParam {Object} [columns]         The table columns.
+     * @apiParam {Object} [order]           The data ordering.
+     * @apiParam {Integer} [start]          The data offset.
+     * @apiParam {Integer} [length]         The data count.
+     * @apiParam {Object} [search]          The search options.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Object} result          The user list.
+     *
+     * @apiError (Error 401) {Object} AccessDenied           The user does not have permission to list users.
+     */
     public function getUsers(Request $request)
     {
         if(!UserHelper::userIsAdmin($request->user))
@@ -28,6 +47,22 @@ class UserController extends Controller
         return ResponseHelper::make(json_decode($datatables->content()));
     }
 
+    /**
+     * @api {get} /users/:id Get a User
+     * @apiDescription Get the user with the given id
+     * @apiName GetUser
+     * @apiGroup Users
+     *
+     * @apiParam {String} key               The user API key.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Object} result          The user data.
+     *
+     * @apiError (Error 401) {Object} AccessDenied           The user does not have permission to get users.
+     * @apiError (Error 404) {Object} NotFound               Unable to find a user with the given id.
+     * @apiError (Error 400) {Object} MissingParameters      There is a missing or invalid parameter.
+     */
     public function getUser(Request $request, $user_id)
     {
         if(!UserHelper::userIsAdmin($request->user))
@@ -43,7 +78,7 @@ class UserController extends Controller
             return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
         }
 
-        $user = UserHelper::getUserById($user_id, true);
+        $user = UserHelper::getUserById($user_id);
         if (!$user)
         {
             return ResponseHelper::make('NOT_FOUND', 'User not found.', 404);
@@ -52,6 +87,24 @@ class UserController extends Controller
         return ResponseHelper::make($user);
     }
 
+    /**
+     * @api {put} /users/:id Update a user
+     * @apiDescription Update the user with the given id.
+     * @apiName UpdateUser
+     * @apiGroup Users
+     *
+     * @apiParam {String} key               The user API key.
+     * @apiParam {String} [role]            The new role.
+     * @apiParam {String} [status]          The user status change: enable, disable or toggle.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Object} result          The updated user data.
+     *
+     * @apiError (Error 401) {Object} AccessDenied           The user does not have permission to edit the user.
+     * @apiError (Error 404) {Object} NotFound               Unable to find a user with the given id.
+     * @apiError (Error 400) {Object} MissingParameters      There is a missing or invalid parameter.
+     */
     public function updateUser(Request $request, $user_id)
     {
         if(!UserHelper::userIsAdmin($request->user))
@@ -59,7 +112,7 @@ class UserController extends Controller
             return ResponseHelper::make('ACCESS_DENIED', 'You do not have permission to edit users.', 401);
         }
 
-        // At least one of the link properties must be present in the input data
+        // At least one of the user properties must be present in the input data
         $request->merge(['id' => $user_id]);
         $validator = \Validator::make($request->all(), [
             'id' => 'required|numeric',
@@ -71,7 +124,7 @@ class UserController extends Controller
             return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
         }
 
-        $user = UserHelper::getUserById($user_id, true);
+        $user = UserHelper::getUserById($user_id);
         if (!$user)
         {
             return ResponseHelper::make('NOT_FOUND', 'User not found.', 404);
@@ -109,6 +162,24 @@ class UserController extends Controller
         return ResponseHelper::make($user);
     }
 
+    /**
+     * @api {put} /users/:id/api Change API Settings
+     * @apiDescription Change the API Settings of the user with the given id.
+     * @apiName ChangeAPI
+     * @apiGroup Users
+     *
+     * @apiParam {String} key               The user API key.
+     * @apiParam {String} [quota]           The new quota.
+     * @apiParam {String} [status]          The access change: enable, disable or toggle.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Object} result          The updated user data.
+     *
+     * @apiError (Error 401) {Object} AccessDenied           The user does not have permission to edit the user.
+     * @apiError (Error 404) {Object} NotFound               Unable to find a user with the given id.
+     * @apiError (Error 400) {Object} MissingParameters      There is a missing or invalid parameter.
+     */
     public function updateApi(Request $request, $user_id)
     {
         if(!UserHelper::userIsAdmin($request->user))
@@ -116,7 +187,7 @@ class UserController extends Controller
             return ResponseHelper::make('ACCESS_DENIED', 'You do not have permission to edit users.', 401);
         }
 
-        // At least one of the link properties must be present in the input data
+        // At least one of the user properties must be present in the input data
         $request->merge(['id' => $user_id]);
         $validator = \Validator::make($request->all(), [
             'id' => 'required|numeric',
@@ -128,7 +199,7 @@ class UserController extends Controller
             return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
         }
 
-        $user = UserHelper::getUserById($user_id, true);
+        $user = UserHelper::getUserById($user_id);
         if (!$user)
         {
             return ResponseHelper::make('NOT_FOUND', 'User not found.', 404);
@@ -161,16 +232,24 @@ class UserController extends Controller
         return ResponseHelper::make($user);
     }
 
+    /**
+     * @api {post} /users/:id/api Generate Key
+     * @apiDescription Generate a new API access key for the user with the given id.
+     * @apiName GenerateKey
+     * @apiGroup Users
+     *
+     * @apiParam {String} key               The user API key.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Mixed} result           The updated user data.
+     *
+     * @apiError (Error 401) {Object} AccessDenied           The user does not have permission to edit the user.
+     * @apiError (Error 404) {Object} NotFound               Unable to find a user with the given id.
+     * @apiError (Error 400) {Object} MissingParameters      There is a missing or invalid parameter.
+     */
     public function generateNewKey(Request $request, $user_id)
     {
-        /**
-         * If user is an admin, allow resetting of any API key
-         *
-         * If user is not an admin, allow resetting of own key only, and only if
-         * API is enabled for the account.
-         * @return string; new API key
-         */
-
         $validator = \Validator::make(['id' => $user_id], [
             'id' => 'required|numeric',
         ]);
@@ -179,7 +258,7 @@ class UserController extends Controller
             return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
         }
 
-        $user = UserHelper::getUserById($user_id, true);
+        $user = UserHelper::getUserById($user_id);
         if (!$user)
         {
             return ResponseHelper::make('NOT_FOUND', 'User not found.', 404);
@@ -241,7 +320,7 @@ class UserController extends Controller
             return ResponseHelper::make('MISSING_PARAMETERS', 'Invalid or missing parameters.', 400);
         }
 
-        $user = UserHelper::getUserById($user_id, true);
+        $user = UserHelper::getUserById($user_id);
         if (!$user)
         {
             return ResponseHelper::make('NOT_FOUND', 'User not found.', 404);

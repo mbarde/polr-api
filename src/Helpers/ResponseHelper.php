@@ -4,6 +4,15 @@ namespace Lagdo\Polr\Api\Helpers;
 
 class ResponseHelper
 {
+    /**
+     * Create a JSON response for API calls
+     *
+     * @param string $result        The result data of the API call
+     * @param string $message       The result message of the API call
+     * @param number $code          The HTTP code returned by the API call
+     *
+     * @return Response
+     */
 	public static function make($result = null, $message = 'OK', $code = 200)
 	{
 	    $response = compact('message');
