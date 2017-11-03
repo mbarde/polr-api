@@ -55,6 +55,6 @@ class UserHelper
     {
         return User::select(['username', 'email', 'created_at', 'active',
             'api_key', 'api_active', 'api_quota', 'role', 'id'])
-            ->where('id', $user_id);
+            ->where('id', $user_id)->first();
     }
 }

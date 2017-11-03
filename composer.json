@@ -1,6 +1,6 @@
 {
     "name": "lagdo/polr-api",
-    "description": "An alternative API for the Polr URL Shortener.",
+    "description": "A Restful API for the Polr URL Shortener.",
     "keywords": ["url-shortener", "url", "api"],
     "license": "GPL-v2",
     "type": "project",
