@@ -378,8 +378,8 @@ Restful API for the Polr URL Shortener
 | Name     | Type       | Description                           |
 |:---------|:-----------|:--------------------------------------|
 | key | String | <p>The user API key.</p>|
-| quota | String | **optional**<p>The new quota.</p>|
-| status | String | **optional**<p>The access change: enable, disable or toggle.</p>|
+| quota | String | **optional**<p>The new API quota.</p>|
+| status | String | **optional**<p>The API access change: enable, disable or toggle.</p>|
 
 
 ### Success 200
