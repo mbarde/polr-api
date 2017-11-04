@@ -45,3 +45,23 @@ The API endpoints are [documented here](docs/api.md). The documentation is gener
 Known issues
 ------------
 
+Sometimes the requests to the API return with errors due to CSRF verification failure.
+That's because Polr has disabled CSRF verification only for its own API endpoints.
+
+This API endpoints then need to be also added in the `app/Http/Middleware\VerifyCsrfToken.php` file.
+
+```php
+    public function handle($request, \Closure $next) {
+        if ($request->is('api/v*/action/*') ||
+            $request->is('api/v*/data/*') ||
+            $request->is('api/v*/links/*') ||
+            $request->is('api/v*/users/*') ||
+            $request->is('api/v*/stats/*')) {
+            // Exclude public API from CSRF protection
+            // but do not exclude private API endpoints
+            return $next($request);
+        }
+
+        return parent::handle($request, $next);
+    }
+```
