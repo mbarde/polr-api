@@ -16,7 +16,7 @@ $this->app->group(['prefix' => 'api/v2', 'namespace' => 'Lagdo\Polr\Api\Http\Con
     // Get a paginated list of links
     $app->get('links', 'LinkController@getAdminLinks');
     // Get a paginated list of user links
-    $app->get('user/links', 'LinkController@getUserLinks');
+    $app->get('users/me/links', 'LinkController@getUserLinks');
     // Create a new link
     $app->post('links', 'LinkController@shortenLink');
     // Get the link with a given ending

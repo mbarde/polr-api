@@ -47,7 +47,7 @@ class LinkController extends Controller
     }
 
     /**
-     * @api {get} /user/links Get User Links
+     * @api {get} /users/me/links Get User Links
      * @apiDescription Fetch a paginated list of links. The input parameters are those of the Datatables library.
      * @apiName GetUserLinks
      * @apiGroup Links

@@ -108,7 +108,7 @@ Restful API for the Polr URL Shortener
 
 <p>Fetch a paginated list of links. The input parameters are those of the Datatables library.</p>
 
-  GET /user/links
+  GET /users/me/links
 
 
 
