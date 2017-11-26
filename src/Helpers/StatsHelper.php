@@ -70,23 +70,22 @@ class StatsHelper
         // date => x
         // clicks => y
 
-        // Issue a different request for MySQL and PostgreSQL database drivers
-        $stats = $this->getBaseRows();
-    	$db_driver = DB::connection()->getDriverName();
-        switch($db_driver)
-        {
-        case 'pgsql':
-        	$stats->select(DB::raw("to_char(created_at, 'yyyy-mm-dd') AS x, count(*) AS y"))
-        	   ->groupBy(DB::raw("to_char(created_at, 'yyyy-mm-dd')"));
-        	break;
-        case 'mysql':
-        default:
-            $stats->select(DB::raw("DATE_FORMAT(created_at, '%Y-%m-%d') AS x, count(*) AS y"))
-                ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y-%m-%d')"));
-            break;
+        // Run a different SQL query depending on database driver
+        $db_driver = DB::connection()->getDriverName();
+        if ($db_driver == 'pgsql') {
+            $created_at = "to_char(created_at, 'yyyy-mm-dd')";
         }
-                
-        return $stats->orderBy('x', 'asc')->get();
+        else {
+            $created_at = "DATE_FORMAT(created_at, '%Y-%m-%d')";
+        }
+
+        $stats = $this->getBaseRows()
+            ->select(DB::raw("$created_at AS x, count(*) AS y"))
+            ->groupBy(DB::raw($created_at))
+            ->orderBy('x', 'asc')
+            ->get();
+
+        return $stats;
     }
 
     /**
