@@ -15,16 +15,10 @@ This package gives access to all Polr features through a Restful API, excepted t
 Installation
 ------------
 
-Add the Github repository and package to the `composer.json` file of your Polr installation, and run `composer update`.
+Add the Polr API package to the `composer.json` file of your Polr installation, and run `composer update`.
 
 ```json
 {
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/lagdo/polr-api"
-        }
-    ],
     "require": {
         "lagdo/polr-api": "dev-master"
     }
@@ -52,11 +46,9 @@ This API endpoints then need to be also added in the `app/Http/Middleware\Verify
 
 ```php
     public function handle($request, \Closure $next) {
-        if ($request->is('api/v*/action/*') ||
-            $request->is('api/v*/data/*') ||
-            $request->is('api/v*/links/*') ||
-            $request->is('api/v*/users/*') ||
-            $request->is('api/v*/stats/*')) {
+        if ($request->is('api/v*') &&
+            !$request->is('api/v*/admin/*') &&
+            !$request->is('api/v*/link_avail_check')) {
             // Exclude public API from CSRF protection
             // but do not exclude private API endpoints
             return $next($request);
