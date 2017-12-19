@@ -20,7 +20,7 @@ Add the Polr API package to the `composer.json` file of your Polr installation, 
 ```json
 {
     "require": {
-        "lagdo/polr-api": "dev-master"
+        "lagdo/polr-api": "~0.1"
     }
 }
 ```
