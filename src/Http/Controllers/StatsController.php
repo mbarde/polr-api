@@ -5,9 +5,10 @@ use Illuminate\Http\Request;
 
 use App\Http\Controllers\Controller;
 use App\Helpers\LinkHelper;
+
 use Lagdo\Polr\Api\Helpers\UserHelper;
-use Lagdo\Polr\Api\Helpers\ResponseHelper;
 use Lagdo\Polr\Api\Helpers\StatsHelper;
+use Lagdo\Polr\Api\Helpers\ResponseHelper;
 
 class StatsController extends Controller
 {
@@ -68,7 +69,7 @@ class StatsController extends Controller
      * @apiDescription Fetch stats of a given type.
      * @apiName GetStats
      * @apiGroup Stats
-     * 
+     *
      * @apiParam {String} key               The user API key.
      * @apiParam {String} type              The type of stats to fetch.
      * @apiParam {String} left_bound        The start date.
@@ -104,7 +105,7 @@ class StatsController extends Controller
      * @apiDescription Fetch stats of a given type for a single link.
      * @apiName GetLinkStats
      * @apiGroup Stats
-     * 
+     *
      * @apiParam {String} key               The user API key.
      * @apiParam {String} type              The type of stats to fetch.
      * @apiParam {String} ending            The short URL id of the link.

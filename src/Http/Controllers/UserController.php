@@ -7,9 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Factories\UserFactory;
 use App\Models\User;
 use App\Helpers\CryptoHelper;
+
 use Lagdo\Polr\Api\Helpers\UserHelper;
 use Lagdo\Polr\Api\Helpers\ResponseHelper;
-
 use Yajra\Datatables\Facades\Datatables;
 
 class UserController extends Controller
@@ -19,7 +19,7 @@ class UserController extends Controller
      * @apiDescription Fetch a paginated list of users. The input parameters are those of the Datatables library.
      * @apiName GetUsers
      * @apiGroup Users
-     * 
+     *
      * @apiParam {Integer} [draw]           The draw option.
      * @apiParam {Object} [columns]         The table columns.
      * @apiParam {Object} [order]           The data ordering.
@@ -43,7 +43,7 @@ class UserController extends Controller
         $users = User::select(['username', 'email', 'created_at', 'active',
             'api_key', 'api_active', 'api_quota', 'role', 'id']);
         $datatables = Datatables::of($users)->make(true);
-        
+
         return ResponseHelper::make(json_decode($datatables->content()));
     }
 
@@ -83,7 +83,7 @@ class UserController extends Controller
         {
             return ResponseHelper::make('NOT_FOUND', 'User not found.', 404);
         }
-        
+
         return ResponseHelper::make($user);
     }
 

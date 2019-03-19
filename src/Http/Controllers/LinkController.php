@@ -3,13 +3,13 @@ namespace Lagdo\Polr\Api\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\Controller;
-use App\Factories\LinkFactory;
-use App\Helpers\LinkHelper;
 use App\Models\Link;
+use App\Http\Controllers\Controller;
+use App\Helpers\LinkHelper;
+
 use Lagdo\Polr\Api\Helpers\UserHelper;
 use Lagdo\Polr\Api\Helpers\ResponseHelper;
-
+use Lagdo\Polr\Api\Factories\LinkFactory;
 use Yajra\Datatables\Facades\Datatables;
 
 class LinkController extends Controller
