@@ -19,6 +19,8 @@ $this->app->group(['prefix' => 'api/v2', 'namespace' => 'Lagdo\Polr\Api\Http\Con
     $app->get('users/me/links', 'LinkController@getUserLinks');
     // Create a new link
     $app->post('links', 'LinkController@shortenLink');
+    // Create a list of link
+    $app->post('links/list', 'LinkController@shortenLinks');
     // Get the link with a given ending
     $app->get('links/{ending}', 'LinkController@lookupLink');
     // Update the link with a given ending

@@ -19,7 +19,7 @@ class LinkController extends Controller
      * @apiDescription Fetch a paginated list of links. The input parameters are those of the Datatables library.
      * @apiName GetAdminLinks
      * @apiGroup Links
-     * 
+     *
      * @apiParam {Integer} [draw]           The draw option.
      * @apiParam {Object} [columns]         The table columns.
      * @apiParam {Object} [order]           The data ordering.
@@ -91,7 +91,6 @@ class LinkController extends Controller
      * @apiParam {String} url               The link to shorten.
      * @apiParam {String} [ending]          A custom ending for the link.
      * @apiParam {String} [secret]          Create a secret link or not.
-     * @apiParam {String} [ip]              The IP address the request came from.
      *
      * @apiSuccess {String} message         The response message.
      * @apiSuccess {Object} settings        The Polr instance config options.
@@ -116,7 +115,6 @@ class LinkController extends Controller
         $validator = \Validator::make($request->all(), [
             'ending' => 'alpha_dash',
             'secret' => 'in:true,false',
-            'ip' => 'ip',
         ]);
         if ($validator->fails())
         {
@@ -125,7 +123,7 @@ class LinkController extends Controller
 
         $long_url = $request->input('url'); // * required
         $is_secret = ($request->input('secret') == 'true' ? true : false);
-        $link_ip = $request->input('ip');
+        $link_ip = $request->ip();
         $custom_ending = $request->input('ending');
         try
         {
@@ -138,6 +136,58 @@ class LinkController extends Controller
         }
 
         return ResponseHelper::make($formatted_link);
+    }
+
+    /**
+     * @api {post} /links/batch Shorten a list of links
+     * @apiDescription Create a shortened URL for a given list of links
+     * @apiName ShortenLinks
+     * @apiGroup Links
+     *
+     * @apiParam {String} key               The user API key.
+     * @apiParam {String} urls              The list of links to shorten.
+     *
+     * @apiSuccess {String} message         The response message.
+     * @apiSuccess {Object} settings        The Polr instance config options.
+     * @apiSuccess {Mixed} result           The shortened URLs.
+     */
+    public function shortenLinks(Request $request)
+    {
+        $user = $request->user;
+        $link_ip = $request->ip();
+        $username = $user->username;
+
+        $formatted_links = [];
+        $links_array = json_decode($request->input('urls'));
+
+        foreach($links_array as $link)
+        {
+            $validator = \Validator::make($link, [
+                'url' => 'required|url'
+            ]);
+            if($validator->fails())
+            {
+                continue;
+            }
+
+            $is_secret = array_get($link, 'is_secret') == 'true' ? true : false;
+            $custom_ending = array_get($link, 'custom_ending', null);
+            $formatted_link = LinkFactory::createLink($link['url'], $is_secret,
+                $custom_ending, $link_ip, $username, false, true);
+            $formatted_link = [
+                'long_url' => $link['url'],
+                'short_url' => $formatted_link
+            ];
+            // Extra data added by the caller to entries
+            if(key_exists('ref', $link))
+            {
+                $formatted_link['ref'] = $link['ref'];
+            }
+
+            $formatted_links[] = $formatted_link;
+        }
+
+        return ResponseHelper::make($formatted_links);
     }
 
     /**
