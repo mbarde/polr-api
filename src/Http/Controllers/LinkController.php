@@ -158,7 +158,7 @@ class LinkController extends Controller
         $username = $user->username;
 
         $formatted_links = [];
-        $links_array = json_decode($request->input('urls'));
+        $links_array = json_decode($request->input('urls'), true);
 
         foreach($links_array as $link)
         {
